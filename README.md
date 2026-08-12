@@ -115,5 +115,8 @@ Current Phase:
 	3. Architecture definition
 	4. Historical NFL data ingestion
 
+## Documentation
+See `docs/data_sources.md` for source provenance, schema conventions, market-field semantics, and point-in-time data-integrity rules.
+
 ## Disclaimer
 This project is intended for research, analytics, and software development. Predictive models do not guarantee profitable betting outcomes.

@@ -39,3 +39,26 @@ def validate_games_file(path: Path) -> None:
 	if missing_columns:
 		missing = ", ".join(sorted(missing_columns))
 		raise ValueError(f"Games data is missing required columns: {missing}")
+
+
+def validate_game_outcomes(path: Path) -> None:
+	dataframe = pd.read_csv(path)
+	
+	outcome_columns = ["home_score", "away_score", "result"]
+	outcome_present = dataframe[outcome_columns].notna()
+
+	partially_missing = outcome_present.any(axis=1) & ~outcome_present.all(axis=1)
+
+	if partially_missing.any():
+		raise ValueError("Games data contains partially missing outcomes")
+
+	completed_games = dataframe.loc[outcome_present.all(axis=1)]
+
+	expected_result = (
+		completed_games["home_score"] - completed_games["away_score"]	
+	)
+
+	inconsistent_result = completed_games["result"]  != expected_result
+
+	if inconsistent_result.any():
+		raise ValueError("Games data contains inconsistent game results")
