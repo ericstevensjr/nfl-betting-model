@@ -5,6 +5,7 @@ import pytest
 
 from nfl_betting.data.download_games import (
     REQUIRED_COLUMNS,
+    validate_game_ids,
     validate_game_outcomes,
     validate_games_file,
 )
@@ -109,3 +110,85 @@ def test_validate_game_outcomes_rejects_inconsistent_result(
         match="Games data contains inconsistent game results",
     ):
         validate_game_outcomes(path)
+
+def test_validate_game_ids_accepts_valid_ids(tmp_path: Path) -> None:
+    path = tmp_path / "games.csv"
+
+    dataframe = pd.DataFrame(
+        {
+            "game_id": ["2025_01_DAL_PHI"],
+            "season": [2025],
+            "week": [1],
+            "away_team": ["DAL"],
+            "home_team": ["PHI"],
+        }
+    )
+    dataframe.to_csv(path, index=False)
+
+    validate_game_ids(path)
+
+
+def test_validate_game_ids_rejects_missing_id(tmp_path: Path) -> None:
+    path = tmp_path / "games.csv"
+
+    dataframe = pd.DataFrame(
+        {
+            "game_id": [None],
+            "season": [2025],
+            "week": [1],
+            "away_team": ["DAL"],
+            "home_team": ["PHI"],
+        }
+    )
+    dataframe.to_csv(path, index=False)
+
+    with pytest.raises(
+        ValueError,
+        match="Games data contains missing game_id values",
+    ):
+        validate_game_ids(path)
+
+
+def test_validate_game_ids_rejects_duplicate_ids(tmp_path: Path) -> None:
+    path = tmp_path / "games.csv"
+
+    dataframe = pd.DataFrame(
+        {
+            "game_id": [
+                "2025_01_DAL_PHI",
+                "2025_01_DAL_PHI",
+            ],
+            "season": [2025, 2025],
+            "week": [1, 1],
+            "away_team": ["DAL", "DAL"],
+            "home_team": ["PHI", "PHI"],
+        }
+    )
+    dataframe.to_csv(path, index=False)
+
+    with pytest.raises(
+        ValueError,
+        match="Games data contains duplicate game_id values",
+    ):
+        validate_game_ids(path)
+
+
+def test_validate_game_ids_rejects_inconsistent_id(tmp_path: Path) -> None:
+    path = tmp_path / "games.csv"
+
+    dataframe = pd.DataFrame(
+        {
+            "game_id": ["2025_01_PHI_DAL"],
+            "season": [2025],
+            "week": [1],
+            "away_team": ["DAL"],
+            "home_team": ["PHI"],
+        }
+    )
+    dataframe.to_csv(path, index=False)
+
+    with pytest.raises(
+        ValueError,
+        match="Games data contains inconsistent game_id values",
+    ):
+        validate_game_ids(path)

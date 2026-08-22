@@ -108,14 +108,29 @@ Responsibilities:
 
 
 ## Initial Modeling Target
-The first continuous target is:
-	- ATS margin
-Defined as:
-	- ATS margin = scoring margin + spread
-This allows the system to estimate how much a team is expected to outperform or underperform the market line.
 
-Later models may directly estimate:
-	- P(team covers spread)
+The first continuous target is:
+
+- home-team ATS margin
+
+Defined using the raw nflverse home-perspective convention:
+
+- scoring margin = home_score - away_score
+- ATS margin = scoring margin - spread_line
+
+nflverse spread convention:
+
+- positive spread_line = home team favored
+- negative spread_line = away team favored
+
+Therefore:
+
+- positive ATS margin = home team covered
+- negative ATS margin = home team failed to cover
+- zero ATS margin = push
+
+This differs from conventional sportsbook notation, where a home favorite
+would normally be written with a negative spread such as `-3.5`.
 
 ## Data Leakage Policy
 Any feature containing information generated after prediction timestamp is prohibited.

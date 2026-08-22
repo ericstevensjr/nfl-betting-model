@@ -41,6 +41,28 @@ def validate_games_file(path: Path) -> None:
 		raise ValueError(f"Games data is missing required columns: {missing}")
 
 
+def validate_game_ids(path: Path) -> None:
+    dataframe = pd.read_csv(path)
+
+    if dataframe["game_id"].isna().any():
+        raise ValueError("Games data contains missing game_id values")
+
+    if dataframe["game_id"].duplicated().any():
+        raise ValueError("Games data contains duplicate game_id values")
+
+    expected_game_ids = (
+        dataframe["season"].astype(int).astype(str)
+        + "_"
+        + dataframe["week"].astype(str).str.zfill(2)
+        + "_"
+        + dataframe["away_team"]
+        + "_"
+        + dataframe["home_team"]
+    )
+
+    if (dataframe["game_id"] != expected_game_ids).any():
+        raise ValueError("Games data contains inconsistent game_id values")
+
 def validate_game_outcomes(path: Path) -> None:
 	dataframe = pd.read_csv(path)
 	
