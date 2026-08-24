@@ -63,9 +63,23 @@ def validate_game_ids(path: Path) -> None:
     if (dataframe["game_id"] != expected_game_ids).any():
         raise ValueError("Games data contains inconsistent game_id values")
 
+
+def validate_team_assignments(path: Path) -> None:
+    dataframe = pd.read_csv(path)
+
+    if dataframe["home_team"].isna().any():
+        raise ValueError("Games data contains missing home_team values")
+
+    if dataframe["away_team"].isna().any():
+        raise ValueError("Games data contains missing away_team values")
+
+    if (dataframe["home_team"] == dataframe["away_team"]).any():
+        raise ValueError("Games data contains identical home and away teams")
+
+
 def validate_game_outcomes(path: Path) -> None:
 	dataframe = pd.read_csv(path)
-	
+
 	outcome_columns = ["home_score", "away_score", "result"]
 	outcome_present = dataframe[outcome_columns].notna()
 
@@ -76,8 +90,14 @@ def validate_game_outcomes(path: Path) -> None:
 
 	completed_games = dataframe.loc[outcome_present.all(axis=1)]
 
+	if (completed_games["home_score"] < 0).any():
+		raise ValueError("Games data contains negative home scores")
+
+	if (completed_games["away_score"] < 0).any():
+		raise ValueError("Games data contains negative away scores")
+
 	expected_result = (
-		completed_games["home_score"] - completed_games["away_score"]	
+		completed_games["home_score"] - completed_games["away_score"]
 	)
 
 	inconsistent_result = completed_games["result"]  != expected_result
